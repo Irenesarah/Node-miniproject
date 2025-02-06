@@ -2,25 +2,25 @@ const express = require('express');
 const router = express.Router();
 const service = require('../services/service'); 
 
-
-router.post('/:id', async (req, res, next) => {
+router.post('/', async (req, res, next) => {
     try {
-        const { id } = req.params;
+        
         const { name, email, age } = req.body;
 
         if (!name || !email || !age) {
             return res.status(400).json({ message: "Missing required fields: name, email, age." });
         }
 
-        const updatedUser = await service.addEmployee(req.body, id);
+        const newUser = await service.addNewEmployee(req.body);
         res.status(200).json({
             message: "User created successfully.",
-            user: updatedUser,
+            user: newUser,
         });
     } catch (error) {
         next(error);
     }
 });
+
 
 
 router.get('/', async (req, res, next) => {
@@ -31,7 +31,6 @@ router.get('/', async (req, res, next) => {
         next(error);
     }
 });
-
 
 router.get('/:id', async (req, res, next) => {
     try {

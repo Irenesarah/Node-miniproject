@@ -12,7 +12,14 @@ const PORT = 3000;
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 app.use("/api/employee", employeeRoutes)
-
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  const status = err.status || 500;
+  res.status(status).json({
+    status,
+    message: err.message || "Internal Server Error",
+  });
+});
 
 db.query("SELECT 1")
   .then(() => {
