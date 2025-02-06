@@ -14,7 +14,7 @@ module.exports.getEmployeeById = async (id) => {
     try {  
         let record = []    
         record = await db.query(
-                "SELECT * FROM users WHERE id = ? AND is_deleted = 0", 
+                "SELECT * FROM users WHERE id = ?", 
                 id
             );          
             if (!record || !record[0] || Object.keys(record[0]).length === 0){                             
@@ -40,17 +40,21 @@ module.exports.getEmployeeById = async (id) => {
 
 module.exports.deleteEmployee = async (id) => {
     try {
+        // Delete the user permanently from the database
         const [{ affectedRows }] = await db.query(
-            "UPDATE users SET is_deleted = 1 WHERE id = ? AND is_deleted = 0", 
+            "DELETE FROM users WHERE id = ?", 
             [id]
         );
+
+        // Check if the user with the given ID existed
         if (affectedRows === 0) {
             throw { status: 404, message: `User not found with id: ${id}` };
         }
 
-        
-        const [remainingUsers] = await db.query("SELECT * FROM users WHERE is_deleted = 0");
+        // Fetch remaining users after deletion
+        const [remainingUsers] = await db.query("SELECT * FROM users");
 
+        // Return the response
         return {
             message: "User deleted successfully.",
             userId: id,
@@ -58,6 +62,8 @@ module.exports.deleteEmployee = async (id) => {
         };
     } catch (error) {
         console.error(`Error deleting employee with id ${id}:`, error);
+        
+        // Handle errors gracefully
         if (error.status) throw error;
         throw { status: 500, message: "Failed to delete employee." };
     }
