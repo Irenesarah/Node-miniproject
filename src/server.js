@@ -1,8 +1,8 @@
 const express = require("express");
-/*const bodyparser = require('body-parser');*/
+const employeeRoutes = require("../routes/routes");
 require('express-async-errors');
 const db = require("../services/Db");
-const employeeRoutes = require('../routes/routes');
+
 
 
 const app = express();
