@@ -1,17 +1,18 @@
 const express = require("express");
-const employeeRoutes = require("../routes/routes");
+const productRoutes = require("./routes/routes");
 require('express-async-errors');
-const db = require("../services/Db");
+const cors = require("cors");
+const db = require("./services/Db");
 
 
 
 const app = express();
-const PORT = 3000;
+const PORT = 8000;
 
-
+app.use(cors())
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
-app.use("/api/employee", employeeRoutes)
+app.use("/", productRoutes)
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   const status = err.status || 500;

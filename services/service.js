@@ -3,85 +3,150 @@ const db = require("../services/Db");
 /**
  * Adds a new employee
  */
-module.exports.AddEmployee = async (req, res, next) => {
+
+module.exports.AddProduct = async (req, res, next) => {
   try {
-    const { name, email, age } = req.body;
-    if (!name || !email || !age) {
-      return res.status(400).json({ message: "Missing required fields: name, email, age." });
+    const { name, price, description, image } = req.body;
+
+    
+
+    const [result] = await db.query(
+      "INSERT INTO product (name, price, description, image) VALUES (?, ?, ?, ?)",
+      [name, price, description, image]
+    );
+
+    if (!result.insertId) {
+      return res.status(500).json({ message: "Product creation failed." });
     }
-    const result = await db.query("INSERT INTO users (name, email, age) VALUES (?, ?, ?)", [name, email, age]);
-    const newUserId = result[0].insertId;
-    const [[newUser]] = await db.query("SELECT * FROM users WHERE id = ?", [newUserId]);
-    res.status(201).json({ message: "Employee created successfully.", user: newUser });
+
+    const [[newProduct]] = await db.query(
+      "SELECT * FROM product WHERE id = ?",
+      [result.insertId]
+    );
+
+    res.status(201).json({
+      message: "Product created successfully.",
+      product: newProduct
+    });
   } catch (error) {
-    console.error("Error in addNewEmployee:", error);
-    next({ status: 500, message: "Failed to add employee." });
+    console.error("Error in Product creation:", error);
+    
+    res.status(500).json({ message: "Failed to add Product." });
   }
 };
+  
 
 /**
  * Fetches all employees
  */
-module.exports.GetAllEmployees = async (req, res, next) => {
+module.exports.GetAllProducts = async (req, res, next) => {
   try {
-    const [records] = await db.query("SELECT * FROM users");
+    const [records] = await db.query("SELECT * FROM product");
     res.status(200).json(records);
   } catch (error) {
-    console.error("Error in getAllEmployees:", error);
-    next({ status: 500, message: "Failed to fetch employees." });
+    console.error("Error in GetAllProducts:", error);
+    next({ status: 500, message: "Failed to fetch product." });
   }
 };
 
 /**
  * Fetches a single employee by ID
  */
-module.exports.GetEmployeeById = async (req, res, next) => {
+module.exports.GetProductById = async (req, res, next) => {
   try {
-    const [[record]] = await db.query("SELECT * FROM users WHERE id = ? ", [req.params.id]);
+    const [[record]] = await db.query("SELECT * FROM product WHERE id = ? ", [req.params.id]);
     if (!record) {
-      return res.status(404).json({ message: `Employee not found with id: ${req.params.id}` });
+      return res.status(404).json({ message: `product not found with id: ${req.params.id}` });
     }
     res.status(200).json(record);
   } catch (error) {
-    console.error("Error in getEmployeeById:", error);
-    next({ status: 500, message: "Failed to fetch employee." });
+    console.error("Error in getProductById:", error);
+    next({ status: 500, message: "Failed to fetch product." });
   }
 };
 
-/**
- * Edits an employee's details 
- */
-module.exports.EditEmployee = async (req, res, next) => {
+/*updating product*/
+ 
+
+
+module.exports.EditProduct = async (req, res, next) => {
   try {
-    const { name, email, age } = req.body;
-    if (!name || !email || !age) {
-      return res.status(400).json({ message: "Missing required fields: name, email, age." });
+    const productId = parseInt(req.params.id, 10);
+    const { name, price, description, image } = req.body;
+
+    
+
+    const [result] = await db.query(
+      "UPDATE product SET name = ?, price = ?, description = ?, image = ? WHERE id = ?",
+      [name, price, description, image, productId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(500).json({ message: "Product update failed." });
     }
-    await db.query("CALL new_procedure(?,?,?,?)", [req.params.id, name, email, age]);
-    const [[updatedUser]] = await db.query("SELECT * FROM users WHERE id = ?", [req.params.id]);
-    if (!updatedUser) {
-      return res.status(500).json({ message: "Failed to fetch updated employee." });
-    }
-    res.status(200).json({ message: "Employee updated successfully.", user: updatedUser });
+
+    
+    const [updatedProduct] = await db.query("SELECT * FROM product WHERE id = ?", [productId]);
+
+    console.log(" Product updated successfully"); 
+
+    res.status(200).json({
+      message: "Product updated successfully!",
+      product: updatedProduct[0],
+    });
   } catch (error) {
-    console.error("Error in editEmployee:", error);
-    next({ status: 500, message: "Failed to update employee." });
+    console.error(" Error in Product update:", error);
+    res.status(500).json({ message: "Failed to edit Product." });
   }
 };
 
-/**
- * Deletes an employee from the database
+
+
+ /* Deletes an employee from the database
  */
-module.exports.DeleteEmployee = async (req, res, next) => {
+module.exports.DeleteProduct = async (req, res, next) => {
   try {
-    const [{ affectedRows }] = await db.query("DELETE FROM users WHERE id = ?", [req.params.id]);
+    const productId = req.params.id;
+    module.exports.EditProduct = async (req, res) => {
+      try {
+        console.log("Received data:", req.body); // Debug log
+    
+        const productId = parseInt(req.params.id, 10);
+        const { name, price, description, image } = req.body;
+    
+        if (!name || !price || !description || !image) {
+          return res.status(400).json({ message: "All fields are required." });
+        }
+    
+        const query = "UPDATE product SET name=?, price=?, description=?, image=? WHERE id=?";
+        const result = await new Promise((resolve, reject) => {
+          db.query(query, [name, price, description, image, productId], (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          });
+        });
+    
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ message: "Product not found." });
+        }
+    
+        res.status(200).json({ message: "Product updated successfully." });
+      } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({ error: error.message });
+      }
+    };
+    
+    const [{ affectedRows }] = await db.query("DELETE FROM product WHERE id = ?", [productId]);
+    
     if (affectedRows === 0) {
-      return res.status(404).json({ message: `Employee not found with id: ${req.params.id}` });
+      return res.status(404).json({ message: `Product not found with id: ${productId}` });
     }
-    const [remainingUsers] = await db.query("SELECT * FROM users WHERE is_deleted = 0");
-    res.status(200).json({ message: "Employee deleted successfully.", remainingData: remainingUsers });
+
+    res.status(200).json({ message: "Product deleted successfully." });
   } catch (error) {
-    console.error("Error in deleteEmployee:", error);
-    next({ status: 500, message: "Failed to delete employee." });
+    console.error("Error in DeleteProduct:", error);
+    next({ status: 500, message: "Failed to delete product." });
   }
 };
+

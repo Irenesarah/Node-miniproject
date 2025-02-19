@@ -17,6 +17,7 @@
   "description": "A simple Express app with CRUD APIs using file-based storage.",
   "dependencies": {
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
     "mysql2": "^3.12.0"

@@ -1,13 +1,13 @@
 const express = require("express");
-const employeeHandler = require("../services/service"); 
+const ProductHandler = require("../services/service"); 
 
 const router = express.Router();
 
 
-router.post("/", employeeHandler.AddEmployee);        
-router.get("/", employeeHandler.GetAllEmployees);      
-router.get("/:id", employeeHandler.GetEmployeeById);    
-router.put("/:id", employeeHandler.EditEmployee);       
-router.delete("/:id", employeeHandler.DeleteEmployee);  
+router.post("/product", ProductHandler.AddProduct);        
+router.get("/product", ProductHandler.GetAllProducts);      
+router.get("/product/:id", ProductHandler.GetProductById);    
+router.put("/product/:id", ProductHandler.EditProduct);       
+router.delete("/product/:id", ProductHandler.DeleteProduct);  
 
 module.exports = router;
